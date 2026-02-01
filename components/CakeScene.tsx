@@ -1,53 +1,334 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
-export default function CakeScene({ isLit, onLit }: { isLit: boolean, onLit: () => void }) {
-  const [sprinkles, setSprinkles] = useState<{left: string, top: string, color: string, rot: string}[]>([]);
-
-  useEffect(() => {
-    const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6b9d'];
-    const newSprinkles = Array.from({ length: 20 }).map(() => ({
+export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () => void }) {
+  // Track which candles have been lit (0–4)
+  const [litCount, setLitCount] = useState(0);
+  const [allLit, setAllLit] = useState(false);
+  const [clicked, setClicked] = useState(false);
+  const [sprinkles] = useState(() => {
+    const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6b9d'];
+    return Array.from({ length: 24 }).map(() => ({
       left: `${Math.random() * 160 + 10}px`,
       top: `${Math.random() * 80 + 10}px`,
       color: colors[Math.floor(Math.random() * colors.length)],
-      rot: `${Math.random() * 180}deg`
+      rot: `${Math.random() * 180}deg`,
     }));
-    setSprinkles(newSprinkles);
-  }, []);
+  });
+
+  // Sequential lighting: one candle every 420ms after click
+  useEffect(() => {
+    if (!clicked) return;
+    if (litCount >= 5) {
+      setAllLit(true);
+      onLit(); // notify parent → triggers scene transition after 4.5s
+      return;
+    }
+    const timer = setTimeout(() => setLitCount((n) => n + 1), 420);
+    return () => clearTimeout(timer);
+  }, [clicked, litCount, onLit]);
+
+  const handleClick = useCallback(() => {
+    if (!clicked) setClicked(true);
+  }, [clicked]);
 
   return (
-    <div id="scene-cake" className={`scene ${isLit ? 'lit' : ''}`}>
-      <div id="ambient-light"></div>
-      <div id="birthday-text">Happy Birthday!</div>
+    <div
+      id="scene-cake"
+      className={`scene ${allLit ? 'lit' : ''}`}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: allLit
+          ? 'radial-gradient(ellipse 80% 60% at 50% 45%, #3d2a1a 0%, #1a0f08 60%, #0d0906 100%)'
+          : 'radial-gradient(ellipse 60% 50% at 50% 40%, #2a1f14 0%, #1a1210 60%, #0f0c0a 100%)',
+        transition: 'background 1.2s ease',
+        overflow: 'hidden',
+      }}
+      onClick={handleClick}
+    >
+      {/* Ambient warm glow behind cake — grows when lit */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '30%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: allLit ? '520px' : '200px',
+          height: allLit ? '420px' : '160px',
+          borderRadius: '50%',
+          background: 'radial-gradient(ellipse, rgba(255,180,60,0.22) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+          transition: 'width 1s ease, height 1s ease',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
 
-      <div className="cake-wrapper" onClick={onLit}>
-        <div className="candle-area">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="candle">
-              <div className="flame">
-                <div className="flame-glow"></div>
-                <div className="flame-inner"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="frosting-top"></div>
-        <div className="cake-body">
-          <div className="cake-layer-1">
-            {[1,2,3,4,5].map(i => <div key={i} className="drip"></div>)}
-            {sprinkles.map((s, i) => (
-              <div key={i} className="sprinkle" style={{ 
-                left: s.left, top: s.top, backgroundColor: s.color, transform: `rotate(${s.rot})` 
-              }} />
-            ))}
-          </div>
-          <div className="cake-layer-2"></div>
-        </div>
-        <div className="plate"></div>
+      {/* Title */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          color: allLit ? '#ffe8b0' : '#6b5a4a',
+          fontSize: '28px',
+          fontFamily: "'Georgia', serif",
+          letterSpacing: '4px',
+          marginBottom: '48px',
+          textShadow: allLit ? '0 0 20px rgba(255,200,100,0.5)' : 'none',
+          transition: 'color 1s ease, text-shadow 1s ease',
+        }}
+      >
+        Happy Birthday !
       </div>
 
-      {!isLit && <div style={{marginTop: '40px', animation: 'hintPulse 2s infinite'}}>👆 点击蛋糕点燃蜡烛</div>}
+      {/* Cake wrapper */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        {/* Candle row */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '18px',
+            marginBottom: '4px',
+            height: '72px',
+            alignItems: 'flex-end',
+          }}
+        >
+          {[0, 1, 2, 3, 4].map((i) => {
+            const isOn = i < litCount;
+            // Stagger candle heights for a nice arc
+            const heights = [52, 62, 68, 62, 52];
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {/* Flame + glow */}
+                <div
+                  style={{
+                    width: '24px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: isOn ? 1 : 0,
+                    transition: 'opacity 0.3s ease',
+                  }}
+                >
+                  {/* Outer glow — flickers */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: isOn ? '36px' : '0px',
+                      height: isOn ? '44px' : '0px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(ellipse, rgba(255,180,60,0.35) 0%, transparent 70%)',
+                      filter: 'blur(8px)',
+                      animation: isOn ? 'flicker 0.15s infinite alternate' : 'none',
+                      transition: 'width 0.4s, height 0.4s',
+                    }}
+                  />
+                  {/* Main flame shape */}
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '10px',
+                      height: '22px',
+                      background: 'linear-gradient(to top, #ff9a00, #ffdd44, #fff8e0)',
+                      borderRadius: '50% 50% 40% 40%',
+                      boxShadow: '0 0 6px 2px rgba(255,180,60,0.6)',
+                      animation: isOn ? 'flameDance 0.12s infinite alternate' : 'none',
+                      zIndex: 1,
+                    }}
+                  >
+                    {/* Inner white-hot core */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '6px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '5px',
+                        height: '10px',
+                        background: '#fff8e0',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Candle stick */}
+                <div
+                  style={{
+                    width: '8px',
+                    height: `${heights[i]}px`,
+                    background: `linear-gradient(to bottom, ${['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6b9d'][i]}, ${['#cc4444', '#ccaa22', '#449944', '#3366cc', '#cc3366'][i]})`,
+                    borderRadius: '3px 3px 2px 2px',
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Frosting swirl top */}
+        <div
+          style={{
+            width: '220px',
+            height: '28px',
+            background: 'linear-gradient(135deg, #fff5e6 0%, #ffe0cc 40%, #fff0e0 70%, #ffe8d8 100%)',
+            borderRadius: '50% 50% 0 0',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 -2px 8px rgba(0,0,0,0.15)',
+          }}
+        >
+          {/* Swirl decoration */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '4px',
+              left: '30px',
+              right: '30px',
+              height: '10px',
+              background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 8px, rgba(255,180,140,0.3) 8px, rgba(255,180,140,0.3) 12px)',
+            }}
+          />
+        </div>
+
+        {/* Main cake body */}
+        <div
+          style={{
+            width: '220px',
+            height: '90px',
+            background: 'linear-gradient(180deg, #f5c8a0 0%, #e8a878 40%, #d4886a 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '0 0 6px 6px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          }}
+        >
+          {/* Drips */}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: '-8px',
+                left: `${20 + i * 45}px`,
+                width: '12px',
+                height: `${22 + (i % 3) * 10}px`,
+                background: 'linear-gradient(to bottom, #fff5e6, #ffe0cc)',
+                borderRadius: '0 0 6px 6px',
+              }}
+            />
+          ))}
+
+          {/* Sprinkles */}
+          {sprinkles.map((s, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                left: s.left,
+                top: s.top,
+                width: '8px',
+                height: '3px',
+                backgroundColor: s.color,
+                borderRadius: '2px',
+                transform: `rotate(${s.rot})`,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}
+            />
+          ))}
+
+          {/* Horizontal stripe layer divider */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '44px',
+              left: 0,
+              right: 0,
+              height: '3px',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+            }}
+          />
+        </div>
+
+        {/* Plate */}
+        <div
+          style={{
+            width: '260px',
+            height: '14px',
+            background: 'linear-gradient(180deg, #e8e0d8, #c8c0b8)',
+            borderRadius: '50%',
+            margin: '0 auto',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+            marginLeft: '-20px',
+          }}
+        />
+      </div>
+
+      {/* Hint text */}
+      {!clicked && (
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            marginTop: '48px',
+            color: '#a08060',
+            fontSize: '15px',
+            fontFamily: "'Georgia', serif",
+            animation: 'hintPulse 2s infinite',
+            letterSpacing: '1px',
+          }}
+        >
+          🕯️ 点击蛋糕点燃蜡烛
+        </div>
+      )}
+
+      {/* Lighting spark effect: brief burst on each candle ignition */}
+      {clicked && litCount > 0 && litCount <= 5 && (
+        <div
+          key={litCount}
+          style={{
+            position: 'absolute',
+            top: '28%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,220,100,0.6) 0%, transparent 70%)',
+            animation: 'sparkBurst 0.5s ease-out forwards',
+            pointerEvents: 'none',
+            zIndex: 3,
+          }}
+        />
+      )}
+
+      {/* Keyframes injected via style tag */}
+      <style>{`
+        @keyframes flameDance {
+          0%  { transform: scaleX(1) scaleY(1) rotate(-1deg); }
+          100%{ transform: scaleX(1.15) scaleY(0.92) rotate(1.5deg); }
+        }
+        @keyframes flicker {
+          0%  { opacity: 0.75; transform: scale(0.92); }
+          100%{ opacity: 1;    transform: scale(1.08); }
+        }
+        @keyframes sparkBurst {
+          0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(3);   opacity: 0; }
+        }
+        @keyframes hintPulse {
+          0%, 100% { opacity: 0.5; }
+          50%      { opacity: 1;   }
+        }
+      `}</style>
     </div>
   );
 }
