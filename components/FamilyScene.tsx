@@ -1,14 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 
-// ─── 人物与宠物组件 ───────────────────────────────────────────
+// ─── 精修版人物与宠物组件 (保持不变) ───────────────────────────────────────────
 
-const CharacterWrapper = ({ children, left, bottom = '27%', delay }: { children: React.ReactNode, left: string, bottom?: string, delay: string }) => (
+const CharacterWrapper = ({ children, left, bottom = '22%', delay }: { children: React.ReactNode, left: string, bottom?: string, delay: string }) => (
   <div style={{
     position: 'absolute',
     bottom: bottom,
     left: left,
-    zIndex: 8,
+    zIndex: 8, // 人物层级很高
     animation: `bobbing 3s ease-in-out ${delay} infinite`,
     transformOrigin: 'bottom center'
   }}>
@@ -71,7 +71,7 @@ const Cat = () => (
   </svg>
 );
 
-// ─── 家具与背景组件 ─────────────────────────────────────────────────────────
+// ─── 温馨背景家具组件 ───────────────────────────────────────────────────────
 
 const Sofa = () => (
   <svg width="320" height="110" viewBox="0 0 320 110">
@@ -80,43 +80,131 @@ const Sofa = () => (
     <rect x="20" y="10" width="280" height="50" rx="10" fill="#dba87d" />
     <rect x="0" y="40" width="35" height="70" rx="10" fill="#dba87d" />
     <rect x="285" y="40" width="35" height="70" rx="10" fill="#dba87d" />
+    <line x1="160" y1="55" x2="160" y2="95" stroke="#ad7a52" strokeWidth="2" opacity="0.3"/>
   </svg>
 );
 
 const PhotoFrames = () => (
-  <svg width="180" height="80" viewBox="0 0 180 80" opacity="0.9">
-    <rect x="10" y="10" width="50" height="60" fill="#8c5e35" rx="2" />
-    <rect x="15" y="15" width="40" height="50" fill="#f7f2e8" />
-    <rect x="75" y="20" width="90" height="40" fill="#8c5e35" rx="2" />
-    <rect x="80" y="25" width="80" height="30" fill="#f7f2e8" />
-  </svg>
-);
-
-const UpsideDownFu = () => (
-  <svg width="60" height="60" viewBox="0 0 60 60" style={{ filter: 'drop-shadow(1px 2px 2px rgba(0,0,0,0.2))' }}>
-    <g transform="rotate(180 30 30)">
-      <rect x="5" y="5" width="50" height="50" fill="#e63946" rx="3" />
-      <text x="30" y="32" fill="#ffd700" fontSize="28" fontFamily="KaiTi" fontWeight="bold" textAnchor="middle" dominantBaseline="central">福</text>
-    </g>
+  <svg width="220" height="100" viewBox="0 0 220 100" opacity="0.9">
+    <rect x="10" y="10" width="60" height="80" fill="#8c5e35" rx="2" />
+    <rect x="15" y="15" width="50" height="70" fill="#f7f2e8" />
+    <circle cx="40" cy="45" r="15" fill="#d9c5b2" opacity="0.5" />
+    <rect x="85" y="25" width="120" height="50" fill="#8c5e35" rx="2" />
+    <rect x="90" y="30" width="110" height="40" fill="#f7f2e8" />
+    <path d="M90 70 L110 50 L140 70 L200 70" fill="#d9c5b2" opacity="0.5" />
   </svg>
 );
 
 const PottedPlant = () => (
-  <svg width="100" height="140" viewBox="0 0 100 140">
-    <path d="M30 135 L70 135 L75 100 L25 100 Z" fill="#b36b44" /> {/* 花盆 */}
-    <path d="M50 100 Q20 60 50 10 Q80 60 50 100" fill="#4f7942" /> {/* 叶子 */}
-    <path d="M50 100 Q5 70 30 40" fill="#6b9c59" />
-    <path d="M50 100 Q95 70 70 40" fill="#6b9c59" />
+  <svg width="80" height="120" viewBox="0 0 80 120">
+    <path d="M20 115 L60 115 L65 85 L15 85 Z" fill="#b36b44" />
+    <rect x="15" y="80" width="50" height="10" fill="#8f5130" rx="2" />
+    <path d="M40 85 Q20 40 40 10 Q60 40 40 85" fill="#6b9c59" />
+    <path d="M40 85 Q10 60 25 35" fill="#6b9c59" opacity="0.8" />
+    <path d="M40 85 Q70 60 55 35" fill="#6b9c59" opacity="0.8" />
   </svg>
 );
 
-const Window = () => (
-  <svg width="120" height="160" viewBox="0 0 120 160">
-    <rect x="5" y="5" width="110" height="150" fill="#a5d8ff" rx="2" /> {/* 窗外景色 */}
-    <rect x="5" y="5" width="110" height="150" fill="rgba(255,255,255,0.1)" />
-    <rect x="0" y="75" width="120" height="10" fill="#fff" /> {/* 窗格 */}
-    <rect x="55" y="5" width="10" height="150" fill="#fff" />
-    <rect x="0" y="0" width="120" height="160" fill="none" stroke="#fff" strokeWidth="8" rx="4" /> {/* 窗框 */}
+const CoffeeTable = () => (
+  <svg width="200" height="60" viewBox="0 0 200 60">
+    <ellipse cx="100" cy="20" rx="95" ry="20" fill="#7a533e" />
+    <ellipse cx="100" cy="22" rx="95" ry="20" fill="#614030" />
+    <rect x="30" y="25" width="12" height="30" fill="#614030" rx="2" />
+    <rect x="158" y="25" width="12" height="30" fill="#614030" rx="2" />
+    <rect x="60" y="5" width="15" height="18" fill="#fff" rx="2" opacity="0.8" />
+  </svg>
+);
+
+// ─── 新增组件：倒着的福 ───────────────────────────────────────────────────
+const UpsideDownFu = () => (
+  // 添加一个微小的阴影，增加纸张贴在墙上的立体感
+  <svg width="70" height="70" viewBox="0 0 70 70" style={{ filter: 'drop-shadow(1px 2px 2px rgba(0,0,0,0.2))' }}>
+    {/* 以中心点 (35,35) 旋转180度，实现“倒”的效果 */}
+    <g transform="rotate(180 35 35)">
+      {/* 红纸背景 */}
+      <rect x="5" y="5" width="60" height="60" fill="#e63946" rx="3" />
+      {/* 金色内边框 */}
+      <rect x="8" y="8" width="54" height="54" fill="none" stroke="#ffd700" strokeWidth="1.5" rx="2" opacity="0.8" />
+      {/* 福字文本 */}
+      <text
+        x="35"
+        y="38"
+        fill="#ffd700"
+        fontSize="34"
+        fontFamily="'STKaiti', 'KaiTi', serif" // 使用楷体增加韵味
+        fontWeight="bold"
+        textAnchor="middle"
+        dominantBaseline="central"
+      >
+        福
+      </text>
+    </g>
+  </svg>
+);
+
+
+// ─── 新增组件：夜景窗户 ───────────────────────────────────────────────────
+const NightWindow = () => (
+  <svg width="140" height="170" viewBox="0 0 140 170" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}>
+    {/* 窗框外框 */}
+    <rect x="0" y="0" width="140" height="170" rx="4" fill="#6b4226" />
+    {/* 夜空背景 */}
+    <rect x="8" y="8" width="124" height="154" fill="#0f1b2d" />
+    {/* 星星 */}
+    <circle cx="30" cy="30" r="1.2" fill="#fff" opacity="0.9" />
+    <circle cx="75" cy="18" r="1" fill="#fff" opacity="0.7" />
+    <circle cx="110" cy="40" r="1.3" fill="#fff" opacity="0.85" />
+    <circle cx="50" cy="55" r="0.9" fill="#fff" opacity="0.6" />
+    <circle cx="95" cy="22" r="1" fill="#fff" opacity="0.75" />
+    <circle cx="20" cy="65" r="1.1" fill="#fff" opacity="0.7" />
+    <circle cx="120" cy="65" r="0.8" fill="#fff" opacity="0.6" />
+    <circle cx="60" cy="35" r="1" fill="#fff" opacity="0.5" />
+    {/* 远处建筑轮廓 */}
+    <rect x="10" y="110" width="18" height="52" fill="#1a2d45" />
+    <rect x="32" y="95" width="22" height="67" fill="#162640" />
+    <rect x="58" y="105" width="16" height="57" fill="#1a2d45" />
+    <rect x="78" y="88" width="24" height="74" fill="#152438" />
+    <rect x="106" y="100" width="26" height="62" fill="#162640" />
+    {/* 建筑上的亮窗户（黄色点光） */}
+    <rect x="15" y="118" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.85" />
+    <rect x="15" y="132" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.6" />
+    <rect x="36" y="105" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.9" />
+    <rect x="36" y="120" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.5" />
+    <rect x="44" y="112" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.7" />
+    <rect x="82" y="98" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.85" />
+    <rect x="82" y="114" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.6" />
+    <rect x="91" y="105" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.75" />
+    <rect x="110" y="110" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.7" />
+    <rect x="122" y="118" width="5" height="6" rx="0.5" fill="#f5dfa0" opacity="0.5" />
+    {/* 月亮 */}
+    <circle cx="105" cy="30" r="10" fill="#fff7d4" opacity="0.9" />
+    <circle cx="108" cy="27" r="10" fill="#0f1b2d" />
+    {/* 窗棂十字分隔 */}
+    <line x1="70" y1="8" x2="70" y2="162" stroke="#6b4226" strokeWidth="5" />
+    <line x1="8" y1="85" x2="132" y2="85" stroke="#6b4226" strokeWidth="5" />
+    {/* 窗台 */}
+    <rect x="-4" y="163" width="148" height="10" rx="2" fill="#7a533e" />
+  </svg>
+);
+
+// ─── 新增组件：落地灯 ───────────────────────────────────────────────────────
+const FloorLamp = () => (
+  <svg width="60" height="160" viewBox="0 0 60 160">
+    {/* 灯脚 */}
+    <ellipse cx="30" cy="155" rx="16" ry="4" fill="#5a4030" />
+    {/* 灯杆 */}
+    <rect x="27" y="45" width="6" height="112" rx="3" fill="#7a6350" />
+    {/* 灯杆装饰节点 */}
+    <ellipse cx="30" cy="80" rx="5" ry="3" fill="#6b5442" />
+    {/* 灯罩 */}
+    <path d="M8 45 Q8 15 30 12 Q52 15 52 45 Z" fill="#f5e6c8" stroke="#d4c4a0" strokeWidth="1.5" />
+    {/* 灯罩顶部收口 */}
+    <ellipse cx="30" cy="14" rx="8" ry="3" fill="#e8d8b0" />
+    {/* 灯芯光源 */}
+    <ellipse cx="30" cy="35" rx="4" ry="5" fill="#ffe97a" opacity="0.9" />
+    {/* 温暖光晕 — 向下扩散 */}
+    <ellipse cx="30" cy="42" rx="22" ry="8" fill="#ffe8a0" opacity="0.15" />
+    <ellipse cx="30" cy="50" rx="28" ry="10" fill="#ffe8a0" opacity="0.08" />
   </svg>
 );
 
@@ -126,110 +214,176 @@ export default function FamilyScene() {
   const [hearts, setHearts] = useState<any[]>([]);
 
   useEffect(() => {
-    const newHearts = Array.from({ length: 15 }).map((_, i) => ({
+    const newHearts = Array.from({ length: 12 }).map((_, i) => ({
       id: i,
-      x: 15 + Math.random() * 70,
-      size: 15 + Math.random() * 20,
+      x: 20 + Math.random() * 60,
+      size: 15 + Math.random() * 15,
       delay: Math.random() * 5,
-      dur: 4 + Math.random() * 6,
+      dur: 5 + Math.random() * 5,
     }));
     setHearts(newHearts);
   }, []);
 
   return (
     <div style={{
-      position: 'relative', width: '100%', height: '100vh',
+      position: 'relative',
+      width: '100%',
+      height: '100vh',
+      // 背景修改为温馨的墙壁颜色
       background: 'linear-gradient(180deg, #fdf6e3 0%, #f8ecc2 60%, #e6d5a8 100%)',
       overflow: 'hidden'
     }}>
 
-      {/* ── 背景装饰层 ── */}
-      <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '28%', background: '#8c5e35', borderTop: '6px solid #6b4226', zIndex: 1 }} />
-      
-      <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}>
-        {/* 窗户 */}
-        <div style={{ position: 'absolute', top: '20%', left: '10%' }}><Window /></div>
-        {/* 倒福 */}
-        <div style={{ position: 'absolute', top: '18%', left: '50%', transform: 'translateX(-50%)' }}><UpsideDownFu /></div>
-        {/* 相框 */}
-        <div style={{ position: 'absolute', top: '32%', left: '75%' }}><PhotoFrames /></div>
-        {/* 沙发 */}
-        <div style={{ position: 'absolute', bottom: '28%', left: '50%', transform: 'translateX(-50%)' }}><Sofa /></div>
-        {/* 盆栽 */}
-        <div style={{ position: 'absolute', bottom: '28%', right: '12%' }}><PottedPlant /></div>
-      </div>
-
-      {/* ── 顶部祝福语 (恢复并优化以前的风格) ── */}
+      {/* ── 背景层 (层级最低 z-index: 1) ── */}
       <div style={{
-        position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)',
-        zIndex: 10, textAlign: 'center'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '2px solid #ffd700',
-          padding: '15px 45px',
-          borderRadius: '50px',
-          boxShadow: '0 0 20px rgba(255, 215, 0, 0.3)',
-          display: 'inline-block',
-          animation: 'titlePulse 4s ease-in-out infinite'
-        }}>
-          <h1 style={{
-            margin: 0, fontSize: '30px', color: '#ffd700',
-            fontFamily: '"STKaiti", "KaiTi", serif', letterSpacing: '6px',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,215,0,0.5)',
-          }}>
-            天天开心 · 身体健康
-          </h1>
-          <div style={{
-            fontSize: '18px', color: '#8b4513', marginTop: '6px',
-            fontFamily: '"STKaiti", "KaiTi", serif', letterSpacing: '8px', opacity: 0.9
-          }}>
-            我们永远在一起
-          </div>
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        height: '28%', // 地板高度
+        background: '#8c5e35',
+        borderTop: '6px solid #6b4226', // 踢脚线
+        zIndex: 1
+      }} />
+
+      {/* ── 家具层 (层级中等 z-index: 2) ── */}
+      <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}>
+        {/* 墙上的倒福 (新增) */}
+        <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)' }}>
+          <UpsideDownFu />
+        </div>
+        {/* 墙上的相框 */}
+        <div style={{ position: 'absolute', top: '28%', left: '50%', transform: 'translateX(-50%)' }}>
+          <PhotoFrames />
+        </div>
+        {/* 沙发 */}
+        <div style={{ position: 'absolute', bottom: '28%', left: '50%', transform: 'translateX(-50%)' }}>
+          <Sofa />
+        </div>
+        {/* 右侧夜景窗户 */}
+        <div style={{ position: 'absolute', top: '18%', right: '6%' }}>
+          <NightWindow />
+        </div>
+        {/* 右侧落地灯 */}
+        <div style={{ position: 'absolute', bottom: '28%', right: '10%' }}>
+          <FloorLamp />
+        </div>
+        {/* 盆栽 */}
+        <div style={{ position: 'absolute', bottom: '28%', left: '15%' }}>
+          <PottedPlant />
+        </div>
+        {/* 茶几 */}
+        <div style={{ position: 'absolute', bottom: '22%', left: '50%', transform: 'translateX(-50%)' }}>
+          <CoffeeTable />
         </div>
       </div>
 
-      {/* ── 漂浮爱心 ── */}
+      {/* ── 顶部艺术字祝福 (层级最高 z-index: 10) ── */}
+      <div style={{
+        position: 'absolute',
+        top: '5%', // 稍微上移，避开福字
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10,
+        textAlign: 'center'
+      }}>
+        <div style={{
+          padding: '10px 36px',
+          borderTop: '2px solid #ffd700',
+          borderBottom: '2px solid #ffd700',
+          background: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(4px)',
+          animation: 'titleGlow 4s ease-in-out infinite',
+          borderRadius: '4px'
+        }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: '32px',
+            fontWeight: 'normal',
+            color: '#d4af37',
+            fontFamily: '"STKaiti", "KaiTi", serif',
+            letterSpacing: '10px',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 15px rgba(255,215,0,0.6)'
+          }}>
+            天天开心 · 身体健康
+          </h1>
+          <h2 style={{
+            margin: '8px 0 0 0',
+            fontSize: '20px',
+            fontWeight: 'normal',
+            color: '#d4af37',
+            fontFamily: '"STKaiti", "KaiTi", serif',
+            letterSpacing: '8px',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 10px rgba(255,215,0,0.5)',
+            opacity: 0.9
+          }}>
+            我们永远在一起
+          </h2>
+        </div>
+      </div>
+
+      {/* ── 漂浮爱心 (层级高 z-index: 9) ── */}
       {hearts.map(h => (
         <div key={h.id} style={{
-          position: 'absolute', bottom: '-10%', left: `${h.x}%`, fontSize: `${h.size}px`,
-          color: '#ff758c', opacity: 0, animation: `floatUp ${h.dur}s ${h.delay}s infinite linear`,
-          pointerEvents: 'none', zIndex: 9
-        }}>♥</div>
+          position: 'absolute',
+          bottom: '-10%',
+          left: `${h.x}%`,
+          fontSize: `${h.size}px`,
+          color: '#ff758c',
+          opacity: 0,
+          animation: `floatUp ${h.dur}s ${h.delay}s infinite linear`,
+          pointerEvents: 'none',
+          zIndex: 9
+        }}>
+          ♥
+        </div>
       ))}
 
-      {/* ── 人物与宠物 ── */}
+      {/* ── 人物组合层 (层级较高 z-index: 8) ── */}
       <div style={{ position: 'relative', height: '100%', width: '100%', zIndex: 8 }}>
+        {/* 底部柔光阴影 */}
         <div style={{
-          position: 'absolute', bottom: '27%', left: '50%', transform: 'translateX(-50%)',
-          width: '420px', height: '30px', background: 'radial-gradient(ellipse, rgba(100, 60, 40, 0.3) 0%, transparent 70%)',
+          position: 'absolute',
+          bottom: '27%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '420px',
+          height: '30px',
+          background: 'radial-gradient(ellipse, rgba(100, 60, 40, 0.4) 0%, transparent 70%)',
           zIndex: 7
         }} />
-        <CharacterWrapper left="32%" delay="0s"><Dad /></CharacterWrapper>
-        <CharacterWrapper left="43%" delay="0.3s"><Mom /></CharacterWrapper>
-        <CharacterWrapper left="55%" delay="0.6s"><Daughter /></CharacterWrapper>
+
+        <CharacterWrapper left="32%" bottom="27%" delay="0s"><Dad /></CharacterWrapper>
+        <CharacterWrapper left="43%" bottom="27%" delay="0.3s"><Mom /></CharacterWrapper>
+        <CharacterWrapper left="55%" bottom="27%" delay="0.6s"><Daughter /></CharacterWrapper>
         <CharacterWrapper left="63%" bottom="26.5%" delay="0.9s"><Cat /></CharacterWrapper>
       </div>
 
-      {/* ── 底部光影 ── */}
+      {/* ── 底部暖光氛围遮罩 ── */}
       <div style={{
-        position: 'absolute', bottom: 0, width: '100%', height: '40%',
-        background: 'linear-gradient(to top, rgba(255, 220, 150, 0.1) 0%, transparent 100%)',
-        pointerEvents: 'none', zIndex: 11
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        height: '40%',
+        background: 'linear-gradient(to top, rgba(255, 220, 150, 0.15) 0%, transparent 100%)',
+        pointerEvents: 'none',
+        zIndex: 11
       }} />
 
+      {/* ── 关键帧动画 ── */}
       <style>{`
-        @keyframes bobbing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes bobbing {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
         @keyframes floatUp {
           0% { transform: translateY(0) scale(0.5); opacity: 0; }
           20% { opacity: 0.8; }
           80% { opacity: 0.8; }
           100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
         }
-        @keyframes titlePulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-          50% { transform: scale(1.03); box-shadow: 0 0 35px rgba(255, 215, 0, 0.5); }
+        @keyframes titleGlow {
+          0%, 100% { text-shadow: 0 0 15px rgba(255,215,0,0.6); transform: scale(1); }
+          50% { text-shadow: 0 0 25px rgba(255,215,0,0.9); transform: scale(1.02); }
         }
       `}</style>
     </div>

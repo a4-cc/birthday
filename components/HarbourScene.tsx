@@ -3,24 +3,33 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Star { x: number; y: number; size: number; delay: number }
-interface Firework {
-  id: number;
-  x: number;         // launch x (%)
-  phase: 'rise' | 'burst' | 'fade';
-  progress: number;  // 0→1
-  color: string;
-  particles: Particle[];
-  startTime: number;
-}
+
+type FireworkStyle = 'standard' | 'ring' | 'chrysanthemum' | 'willow' | 'crossette';
+
 interface Particle {
   angle: number;
   speed: number;
   color: string;
-  trail: number; // trail length factor
+  size: number;
+  trail: number;
+  hasSub: boolean;
+  subAngle: number;
+  subSpeed: number;
+  subColor: string;
+}
+
+interface Firework {
+  id: number;
+  x: number;
+  burstY: number;       // fixed burst height (% from top)
+  style: FireworkStyle;
+  particles: Particle[];
+  coreColor: string;    // brightest colour – used for glow & rocket trail
+  startTime: number;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const FIREWORK_COLORS = [
+const FIREWORK_COLORS: [string, string, string][] = [
   ['#ff4466', '#ff6688', '#ffaacc'],
   ['#ffaa00', '#ffcc44', '#ffee88'],
   ['#44ccff', '#88eeff', '#ccffff'],
@@ -28,17 +37,54 @@ const FIREWORK_COLORS = [
   ['#44ff88', '#88ffbb', '#ccffdd'],
   ['#ff6644', '#ff9966', '#ffccaa'],
   ['#ff44aa', '#ff88cc', '#ffccee'],
+  ['#fff176', '#ffe082', '#ffcc80'],
+  ['#ef5350', '#e57373', '#ffcdd2'],
+  ['#26c6da', '#4dd0e1', '#b2ebf2'],
 ];
 
-function makeParticles(): Particle[] {
-  const count = 28 + Math.floor(Math.random() * 16);
-  const colorSet = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
-  return Array.from({ length: count }, () => ({
-    angle: Math.random() * Math.PI * 2,
-    speed: 0.6 + Math.random() * 1.4,
-    color: colorSet[Math.floor(Math.random() * colorSet.length)],
-    trail: 0.5 + Math.random() * 0.8,
-  }));
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function makeParticles(style: FireworkStyle): Particle[] {
+  const colorSet = pick(FIREWORK_COLORS);
+  const counts: Record<FireworkStyle, number> = {
+    standard: 40 + Math.floor(Math.random() * 20),
+    ring: 36,
+    chrysanthemum: 60 + Math.floor(Math.random() * 24),
+    willow: 48 + Math.floor(Math.random() * 16),
+    crossette: 44 + Math.floor(Math.random() * 16),
+  };
+  const count = counts[style];
+
+  return Array.from({ length: count }, (_, i) => {
+    let angle: number;
+    if (style === 'ring') {
+      angle = (i / count) * Math.PI * 2;
+    } else {
+      angle = Math.random() * Math.PI * 2;
+    }
+
+    const speed = style === 'willow'
+      ? 0.4 + Math.random() * 0.7
+      : style === 'chrysanthemum'
+        ? 0.5 + Math.random() * 0.9
+        : 0.6 + Math.random() * 1.4;
+
+    const hasSub = style === 'crossette' && Math.random() < 0.45;
+
+    return {
+      angle,
+      speed,
+      color: pick(colorSet),
+      size: style === 'chrysanthemum' ? 1.2 + Math.random() * 1.0
+          : style === 'ring'          ? 1.8 + Math.random() * 0.6
+          :                             1.2 + Math.random() * 1.2,
+      trail: style === 'willow' ? 1.2 + Math.random() * 0.8 : 0.4 + Math.random() * 0.6,
+      hasSub,
+      subAngle: angle + (Math.random() - 0.5) * 1.2,
+      subSpeed: 0.3 + Math.random() * 0.5,
+      subColor: colorSet[2],
+    };
+  });
 }
 
 // ─── Stars (static, generated once) ─────────────────────────────────────────
@@ -62,18 +108,22 @@ function FireworksCanvas({ active }: { active: boolean }) {
   const lastLaunchRef = useRef<number>(0);
   const idRef = useRef(0);
 
+  const STYLES: FireworkStyle[] = ['standard', 'ring', 'chrysanthemum', 'willow', 'crossette'];
+
   const launch = useCallback(() => {
+    const style = pick(STYLES);
+    const colorSet = pick(FIREWORK_COLORS);
     const fw: Firework = {
       id: idRef.current++,
-      x: 10 + Math.random() * 80,          // spread across viewport
-      phase: 'rise',
-      progress: 0,
-      color: '#ffdd88',
-      particles: makeParticles(),
+      x: 8 + Math.random() * 84,
+      burstY: 12 + Math.random() * 22,   // 12 %–34 % from top
+      style,
+      particles: makeParticles(style),
+      coreColor: colorSet[0],
       startTime: performance.now(),
     };
     fireworksRef.current.push(fw);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!active) return;
@@ -84,78 +134,169 @@ function FireworksCanvas({ active }: { active: boolean }) {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
+      canvas.width  = canvas.offsetWidth  * dpr;
       canvas.height = canvas.offsetHeight * dpr;
       ctx.scale(dpr, dpr);
     };
     resize();
     window.addEventListener('resize', resize);
 
-    const RISE_DUR = 1100;
-    const BURST_DUR = 1800;
+    const RISE_DUR  = 900;   // rocket travel time (ms)
+    const BURST_DUR = 2200;  // particle expansion + fade (ms)
+    const WATER_Y_PCT = 82;  // approximate water-line for reflection
+
+    // helper: parse hex → [r,g,b]
+    function hexToRgb(hex: string): [number,number,number] {
+      const n = parseInt(hex.replace('#',''), 16);
+      return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+    }
 
     function draw() {
-      const now = performance.now();
-      const w = canvas!.offsetWidth;
-      const h = canvas!.offsetHeight;
+      const now  = performance.now();
+      const w    = canvas!.offsetWidth;
+      const h    = canvas!.offsetHeight;
 
-      // Clear with transparency for trails
       ctx!.clearRect(0, 0, w, h);
 
-      if (now - lastLaunchRef.current > 800 + Math.random() * 1000) {
+      // ── Launch logic: 1-2 rockets every 350-600 ms ──
+      const interval = 350 + Math.random() * 250;
+      if (now - lastLaunchRef.current > interval) {
         launch();
+        if (Math.random() < 0.35) launch(); // occasional double-launch
         lastLaunchRef.current = now;
       }
 
       fireworksRef.current = fireworksRef.current.filter((fw) => {
         const elapsed = now - fw.startTime;
 
+        // ── RISE phase ──────────────────────────────────────────────
         if (elapsed < RISE_DUR) {
-          const t = elapsed / RISE_DUR;
-          // Burst height between 15% and 30% from top
-          const burstY = 15 + Math.random() * 15;
+          const t   = elapsed / RISE_DUR;
           const startY = 100;
-          const curY = startY + (burstY - startY) * (1 - Math.pow(1 - t, 3));
-          const curX = fw.x;
+          const endY   = fw.burstY;
+          // ease-out cubic
+          const curY = startY + (endY - startY) * (1 - Math.pow(1 - t, 3));
+          const cx   = fw.x * w / 100;
+          const cy   = curY * h / 100;
 
+          // rocket trail (fading line behind the dot)
+          const trailLen = 6 * (1 - t) + 2;
+          const [r,g,b] = hexToRgb(fw.coreColor);
+          const grad = ctx!.createLinearGradient(cx, cy, cx, cy + trailLen * h / 100);
+          grad.addColorStop(0, `rgba(${r},${g},${b},0.9)`);
+          grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
           ctx!.beginPath();
-          ctx!.moveTo(curX * w / 100, curY * h / 100);
-          ctx!.lineTo(curX * w / 100, (curY + 5 * (1 - t)) * h / 100);
-          ctx!.strokeStyle = `rgba(255, 220, 140, ${0.8 - t * 0.2})`;
-          ctx!.lineWidth = 2;
+          ctx!.moveTo(cx, cy);
+          ctx!.lineTo(cx, cy + trailLen * h / 100);
+          ctx!.strokeStyle = grad;
+          ctx!.lineWidth = 2.5;
           ctx!.stroke();
+
+          // bright dot at head
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, 2.2, 0, Math.PI * 2);
+          ctx!.fillStyle = `rgba(255,240,200,0.95)`;
+          ctx!.fill();
           return true;
         }
 
+        // ── BURST phase ─────────────────────────────────────────────
         if (elapsed < RISE_DUR + BURST_DUR) {
-          const t = (elapsed - RISE_DUR) / BURST_DUR;
-          // Ensure burst happens where rise ended (approx 22% on average)
-          const cy = 22 * h / 100;
-          const cx = fw.x * w / 100;
+          const t  = (elapsed - RISE_DUR) / BURST_DUR;
+          const cx = fw.x  * w / 100;
+          const cy = fw.burstY * h / 100;
 
-          fw.particles.forEach((p) => {
-            const dist = p.speed * t * 100;
-            const px = cx + Math.cos(p.angle) * dist;
-            // Add gravity effect
-            const py = cy + Math.sin(p.angle) * dist + (30 * t * t);
-
-            const alpha = Math.max(0, 1 - t * 1.2);
-
+          // central flash (only first 15 % of burst)
+          if (t < 0.15) {
+            const flashAlpha = 1 - t / 0.15;
+            const [r,g,b] = hexToRgb(fw.coreColor);
             ctx!.beginPath();
-            ctx!.arc(px, py, 1.5, 0, Math.PI * 2);
-            ctx!.fillStyle = p.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+            ctx!.arc(cx, cy, 8 * (1 - t / 0.15), 0, Math.PI * 2);
+            ctx!.fillStyle = `rgba(${r},${g},${b},${flashAlpha * 0.7})`;
             ctx!.fill();
+          }
+
+          // ── draw each particle ──
+          fw.particles.forEach((p) => {
+            const dist = p.speed * t * 110;
+            const px   = cx + Math.cos(p.angle) * dist;
+            // gravity curve differs by style
+            const gravityK = fw.style === 'willow' ? 55 : fw.style === 'chrysanthemum' ? 18 : 28;
+            const py = cy + Math.sin(p.angle) * dist + gravityK * t * t;
+
+            // alpha: willow fades slower
+            const fadeRate = fw.style === 'willow' ? 0.85 : fw.style === 'chrysanthemum' ? 1.1 : 1.0;
+            const alpha = Math.max(0, 1 - t * fadeRate);
+            if (alpha <= 0) return;
+
+            const [r,g,b] = hexToRgb(p.color);
+
+            // trailing streak for willow / standard
+            if (fw.style === 'willow' || p.trail > 0.7) {
+              const trailT  = Math.max(0, t - 0.06);
+              const trailDist = p.speed * trailT * 110;
+              const tpx = cx + Math.cos(p.angle) * trailDist;
+              const tpy = cy + Math.sin(p.angle) * trailDist + gravityK * trailT * trailT;
+              ctx!.beginPath();
+              ctx!.moveTo(tpx, tpy);
+              ctx!.lineTo(px, py);
+              ctx!.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.4})`;
+              ctx!.lineWidth = p.size * 0.6;
+              ctx!.stroke();
+            }
+
+            // main particle dot
+            ctx!.beginPath();
+            ctx!.arc(px, py, p.size, 0, Math.PI * 2);
+            ctx!.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+            ctx!.fill();
+
+            // soft glow around brighter particles
+            if (alpha > 0.4 && p.size > 1.4) {
+              ctx!.beginPath();
+              ctx!.arc(px, py, p.size + 2, 0, Math.PI * 2);
+              ctx!.fillStyle = `rgba(${r},${g},${b},${alpha * 0.18})`;
+              ctx!.fill();
+            }
+
+            // ── crossette secondary burst ──
+            if (p.hasSub && t > 0.4) {
+              const st   = (t - 0.4) / 0.6;       // 0→1 over second half
+              const sDist = p.subSpeed * st * 60;
+              const spx  = px + Math.cos(p.subAngle) * sDist;
+              const spy  = py + Math.sin(p.subAngle) * sDist + 12 * st * st;
+              const sAlpha = Math.max(0, 1 - st * 1.3);
+              const [sr,sg,sb] = hexToRgb(p.subColor);
+              ctx!.beginPath();
+              ctx!.arc(spx, spy, 1.0, 0, Math.PI * 2);
+              ctx!.fillStyle = `rgba(${sr},${sg},${sb},${sAlpha})`;
+              ctx!.fill();
+            }
+
+            // ── water reflection ──────────────────────────────
+            // Mirror particle below WATER_Y_PCT if it is above it
+            const waterPx = WATER_Y_PCT * h / 100;
+            if (py < waterPx && alpha > 0.15) {
+              const reflY   = waterPx + (waterPx - py) * 0.25; // compressed mirror
+              const reflAlpha = alpha * 0.12 * (1 - (reflY - waterPx) / (h * 0.15));
+              if (reflAlpha > 0) {
+                ctx!.beginPath();
+                ctx!.arc(px, reflY, p.size * 0.7, 0, Math.PI * 2);
+                ctx!.fillStyle = `rgba(${r},${g},${b},${reflAlpha})`;
+                ctx!.fill();
+              }
+            }
           });
           return true;
         }
-        return false;
+        return false; // expired → remove
       });
 
       animRef.current = requestAnimationFrame(draw);
     }
 
-    launch();
-    setTimeout(launch, 500);
+    // seed a few fireworks immediately so the sky isn't empty on mount
+    launch(); launch(); launch();
     lastLaunchRef.current = performance.now();
     animRef.current = requestAnimationFrame(draw);
 
@@ -174,7 +315,7 @@ function FireworksCanvas({ active }: { active: boolean }) {
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        zIndex: 10, // Fireworks on top of buildings
+        zIndex: 10,
       }}
     />
   );
