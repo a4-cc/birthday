@@ -1,14 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 
-// ─── 精修版人物与宠物组件 (保持不变) ───────────────────────────────────────────
+// ─── 精修版人物与宠物组件 ────────────────────────────────────────────────────
 
 const CharacterWrapper = ({ children, left, bottom = '22%', delay }: { children: React.ReactNode, left: string, bottom?: string, delay: string }) => (
   <div style={{
     position: 'absolute',
     bottom: bottom,
     left: left,
-    zIndex: 8, // 人物层级很高
+    zIndex: 8,
     animation: `bobbing 3s ease-in-out ${delay} infinite`,
     transformOrigin: 'bottom center'
   }}>
@@ -71,61 +71,39 @@ const Cat = () => (
   </svg>
 );
 
-// ─── 新增：温馨背景家具组件 ───────────────────────────────────────────────
+// ─── 温馨背景家具组件 ───────────────────────────────────────────────────────
 
 const Sofa = () => (
   <svg width="320" height="110" viewBox="0 0 320 110">
-    {/*底座*/}
     <rect x="20" y="50" width="280" height="50" rx="10" fill="#c79267" />
     <rect x="20" y="90" width="280" height="20" rx="5" fill="#ad7a52" />
-    {/*靠背*/}
     <rect x="20" y="10" width="280" height="50" rx="10" fill="#dba87d" />
-    {/*扶手*/}
     <rect x="0" y="40" width="35" height="70" rx="10" fill="#dba87d" />
     <rect x="285" y="40" width="35" height="70" rx="10" fill="#dba87d" />
-    {/*坐垫线条*/}
     <line x1="160" y1="55" x2="160" y2="95" stroke="#ad7a52" strokeWidth="2" opacity="0.3"/>
   </svg>
 );
 
 const PhotoFrames = () => (
   <svg width="220" height="100" viewBox="0 0 220 100" opacity="0.9">
-    {/* 左侧大相框 */}
     <rect x="10" y="10" width="60" height="80" fill="#8c5e35" rx="2" />
     <rect x="15" y="15" width="50" height="70" fill="#f7f2e8" />
     <circle cx="40" cy="45" r="15" fill="#d9c5b2" opacity="0.5" />
-    {/* 中间横相框 */}
     <rect x="85" y="25" width="120" height="50" fill="#8c5e35" rx="2" />
     <rect x="90" y="30" width="110" height="40" fill="#f7f2e8" />
     <path d="M90 70 L110 50 L140 70 L200 70" fill="#d9c5b2" opacity="0.5" />
   </svg>
 );
 
-const PottedPlant = () => (
-  <svg width="80" height="120" viewBox="0 0 80 120">
-    {/* 花盆 */}
-    <path d="M20 115 L60 115 L65 85 L15 85 Z" fill="#b36b44" />
-    <rect x="15" y="80" width="50" height="10" fill="#8f5130" rx="2" />
-    {/* 叶子 */}
-    <path d="M40 85 Q20 40 40 10 Q60 40 40 85" fill="#6b9c59" />
-    <path d="M40 85 Q10 60 25 35" fill="#6b9c59" opacity="0.8" />
-    <path d="M40 85 Q70 60 55 35" fill="#6b9c59" opacity="0.8" />
+const UpsideDownFu = () => (
+  <svg width="70" height="70" viewBox="0 0 70 70" style={{ filter: 'drop-shadow(1px 2px 2px rgba(0,0,0,0.2))' }}>
+    <g transform="rotate(180 35 35)">
+      <rect x="5" y="5" width="60" height="60" fill="#e63946" rx="3" />
+      <rect x="8" y="8" width="54" height="54" fill="none" stroke="#ffd700" strokeWidth="1.5" rx="2" opacity="0.8" />
+      <text x="35" y="38" fill="#ffd700" fontSize="34" fontFamily="'STKaiti', 'KaiTi', serif" fontWeight="bold" textAnchor="middle" dominantBaseline="central">福</text>
+    </g>
   </svg>
 );
-
-const CoffeeTable = () => (
-  <svg width="200" height="60" viewBox="0 0 200 60">
-    {/* 桌面 */}
-    <ellipse cx="100" cy="20" rx="95" ry="20" fill="#7a533e" />
-    <ellipse cx="100" cy="22" rx="95" ry="20" fill="#614030" /> {/* 厚度感 */}
-    {/* 桌腿 */}
-    <rect x="30" y="25" width="12" height="30" fill="#614030" rx="2" />
-    <rect x="158" y="25" width="12" height="30" fill="#614030" rx="2" />
-    {/* 桌上小物 - 杯子 */}
-    <rect x="60" y="5" width="15" height="18" fill="#fff" rx="2" opacity="0.8" />
-  </svg>
-);
-
 
 // ─── Main Scene ───────────────────────────────────────────────────────
 
@@ -148,130 +126,93 @@ export default function FamilyScene() {
       position: 'relative',
       width: '100%',
       height: '100vh',
-      // 背景修改为温馨的墙壁颜色
       background: 'linear-gradient(180deg, #fdf6e3 0%, #f8ecc2 60%, #e6d5a8 100%)',
       overflow: 'hidden'
     }}>
 
-      {/* ── 背景层 (层级最低 z-index: 1) ── */}
-      {/* 地板 */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        height: '28%', // 地板高度
-        background: '#8c5e35',
-        borderTop: '6px solid #6b4226', // 踢脚线
-        zIndex: 1
-      }} />
-
-      {/* ── 家具层 (层级中等 z-index: 2) ── */}
+      {/* ── 背景家具 ── */}
+      <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '28%', background: '#8c5e35', borderTop: '6px solid #6b4226', zIndex: 1 }} />
       <div style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 2, pointerEvents: 'none' }}>
-        {/* 墙上的相框 */}
-        <div style={{ position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)' }}>
-          <PhotoFrames />
-        </div>
-        {/* 沙发 (放在地板线上方一点) */}
-        <div style={{ position: 'absolute', bottom: '28%', left: '50%', transform: 'translateX(-50%)' }}>
-          <Sofa />
-        </div>
-        {/* 盆栽 (沙发旁边) */}
-        <div style={{ position: 'absolute', bottom: '28%', left: '15%' }}>
-          <PottedPlant />
-        </div>
-        {/* 茶几 (放在沙发前面，稍微低一点) */}
-        <div style={{ position: 'absolute', bottom: '22%', left: '50%', transform: 'translateX(-50%)' }}>
-          <CoffeeTable />
-        </div>
+        <div style={{ position: 'absolute', top: '18%', left: '50%', transform: 'translateX(-50%)' }}><UpsideDownFu /></div>
+        <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translateX(-50%)' }}><PhotoFrames /></div>
+        <div style={{ position: 'absolute', bottom: '28%', left: '50%', transform: 'translateX(-50%)' }}><Sofa /></div>
       </div>
 
-      {/* ── 顶部艺术字祝福 (层级最高 z-index: 10) ── */}
+      {/* ── 顶部双行祝福语 ── */}
       <div style={{
         position: 'absolute',
-        top: '12%',
+        top: '4%',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 10,
-        textAlign: 'center'
+        textAlign: 'center',
+        width: '100%'
       }}>
         <div style={{
-          padding: '12px 40px',
-          borderTop: '2px solid #ffd700',
-          borderBottom: '2px solid #ffd700',
-          background: 'rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(4px)',
+          padding: '15px 50px',
+          background: 'rgba(255, 255, 255, 0.25)',
+          backdropFilter: 'blur(5px)',
+          borderRadius: '8px',
+          display: 'inline-block',
           animation: 'titleGlow 4s ease-in-out infinite',
-          borderRadius: '4px'
+          border: '1px solid rgba(212, 175, 55, 0.3)'
         }}>
-          <h1 style={{
-            margin: 0,
-            fontSize: '38px',
-            fontWeight: 'normal',
-            color: '#d4af37', // 稍微深一点的金色，配合浅色背景
+          {/* 第一行 */}
+          <div style={{
+            fontSize: '32px',
+            color: '#d4af37',
             fontFamily: '"STKaiti", "KaiTi", serif',
-            letterSpacing: '12px',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 15px rgba(255,215,0,0.6)'
+            letterSpacing: '8px',
+            textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            marginBottom: '4px'
           }}>
             天天开心 · 身体健康
-          </h1>
+          </div>
+          {/* 第二行 (新增) */}
+          <div style={{
+            fontSize: '20px',
+            color: '#8b4513', // 使用深咖啡色，显得沉稳温馨
+            fontFamily: '"STKaiti", "KaiTi", serif',
+            letterSpacing: '12px',
+            opacity: 0.8,
+            marginTop: '8px'
+          }}>
+            我们永远在一起
+          </div>
         </div>
       </div>
 
-      {/* ── 漂浮爱心 (层级高 z-index: 9) ── */}
+      {/* ── 漂浮爱心 ── */}
       {hearts.map(h => (
         <div key={h.id} style={{
-          position: 'absolute',
-          bottom: '-10%',
-          left: `${h.x}%`,
-          fontSize: `${h.size}px`,
-          color: '#ff758c',
-          opacity: 0,
-          animation: `floatUp ${h.dur}s ${h.delay}s infinite linear`,
-          pointerEvents: 'none',
-          zIndex: 9
-        }}>
-          ♥
-        </div>
+          position: 'absolute', bottom: '-10%', left: `${h.x}%`, fontSize: `${h.size}px`,
+          color: '#ff758c', opacity: 0, animation: `floatUp ${h.dur}s ${h.delay}s infinite linear`,
+          pointerEvents: 'none', zIndex: 9
+        }}>♥</div>
       ))}
 
-      {/* ── 人物组合层 (层级较高 z-index: 8) ── */}
+      {/* ── 人物与宠物组合 ── */}
       <div style={{ position: 'relative', height: '100%', width: '100%', zIndex: 8 }}>
-        {/* 底部柔光阴影 (放在地板上，人物脚下) */}
         <div style={{
-          position: 'absolute',
-          bottom: '27%', // 调整到地板上方
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '420px',
-          height: '30px',
-          background: 'radial-gradient(ellipse, rgba(100, 60, 40, 0.4) 0%, transparent 70%)',
-          zIndex: 7 // 在人物下面，家具上面
+          position: 'absolute', bottom: '27%', left: '50%', transform: 'translateX(-50%)',
+          width: '420px', height: '30px', background: 'radial-gradient(ellipse, rgba(100, 60, 40, 0.4) 0%, transparent 70%)',
+          zIndex: 7
         }} />
-
-        {/* 人物站位调整，底部基准线提高到地板上 (bottom="27%") */}
         <CharacterWrapper left="32%" bottom="27%" delay="0s"><Dad /></CharacterWrapper>
         <CharacterWrapper left="43%" bottom="27%" delay="0.3s"><Mom /></CharacterWrapper>
         <CharacterWrapper left="55%" bottom="27%" delay="0.6s"><Daughter /></CharacterWrapper>
         <CharacterWrapper left="63%" bottom="26.5%" delay="0.9s"><Cat /></CharacterWrapper>
       </div>
 
-      {/* ── 底部暖光氛围遮罩 (层级最上层，增加温馨感) ── */}
+      {/* ── 底部光影 ── */}
       <div style={{
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        height: '40%',
+        position: 'absolute', bottom: 0, width: '100%', height: '40%',
         background: 'linear-gradient(to top, rgba(255, 220, 150, 0.15) 0%, transparent 100%)',
-        pointerEvents: 'none',
-        zIndex: 11
+        pointerEvents: 'none', zIndex: 11
       }} />
 
-      {/* ── 关键帧动画 ── */}
       <style>{`
-        @keyframes bobbing {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
+        @keyframes bobbing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes floatUp {
           0% { transform: translateY(0) scale(0.5); opacity: 0; }
           20% { opacity: 0.8; }
@@ -279,8 +220,8 @@ export default function FamilyScene() {
           100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
         }
         @keyframes titleGlow {
-          0%, 100% { text-shadow: 0 0 15px rgba(255,215,0,0.6); transform: scale(1); }
-          50% { text-shadow: 0 0 25px rgba(255,215,0,0.9); transform: scale(1.02); }
+          0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.1); transform: scale(1); }
+          50% { box-shadow: 0 0 20px rgba(255,215,0,0.3); transform: scale(1.01); }
         }
       `}</style>
     </div>
