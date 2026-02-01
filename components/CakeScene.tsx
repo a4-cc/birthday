@@ -2,6 +2,20 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
 export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () => void }) {
+  // ── 聚光灯阶段 ──
+  // 0: 纯黑，光束还未启动
+  // 1: 两束光从两侧扫入（CSS animation 驱动，1.8s）
+  // 2: 光束汇聚完毕，黑幕开始褪去（过渡 0.9s）
+  // 3: 黑幕褪完，蛋糕可交互
+  const [spotPhase, setSpotPhase] = useState(0);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setSpotPhase(1), 200);                          // 启动光束
+    const t2 = setTimeout(() => setSpotPhase(2), 200 + 1800);                   // 光束到达 → 开始褪幕
+    const t3 = setTimeout(() => setSpotPhase(3), 200 + 1800 + 400 + 900);       // 褪幕完成 → 可交互
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
   // 追踪点燃的蜡烛数量 (0–5)
   const [litCount, setLitCount] = useState(0);
   const [allLit, setAllLit] = useState(false);
@@ -46,8 +60,9 @@ export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () 
   }, [clicked, litCount, onLit]);
 
   const handleClick = useCallback(() => {
+    if (spotPhase < 3) return;   // 聚光灯还没结束，不响应点击
     if (!clicked) setClicked(true);
-  }, [clicked]);
+  }, [clicked, spotPhase]);
 
   return (
     <div
@@ -65,7 +80,7 @@ export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () 
           : 'radial-gradient(ellipse 60% 50% at 50% 40%, #2a1f14 0%, #1a1210 60%, #0f0c0a 100%)',
         transition: 'background 1.5s ease',
         overflow: 'hidden',
-        cursor: clicked ? 'default' : 'pointer',
+        cursor: (spotPhase >= 3 && !clicked) ? 'pointer' : 'default',
       }}
       onClick={handleClick}
     >
@@ -129,7 +144,7 @@ export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () 
       </div>
 
       {/* 蛋糕主体结构 */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {/* 蜡烛排 */}
         <div
           style={{
@@ -204,8 +219,8 @@ export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () 
         <div style={{ width: '260px', height: '14px', background: 'linear-gradient(180deg, #e8e0d8, #c8c0b8)', borderRadius: '50%', margin: '0 auto', boxShadow: '0 2px 8px rgba(0,0,0,0.25)', marginLeft: '-20px' }} />
       </div>
 
-      {/* 提示文本 */}
-      {!clicked && (
+      {/* 提示文本 — 仅在聚光灯结束且未点击时显示 */}
+      {spotPhase >= 3 && !clicked && (
         <div
           style={{
             position: 'relative',
@@ -220,6 +235,62 @@ export default function CakeScene({ isLit, onLit }: { isLit: boolean; onLit: () 
           🕯️ 点击蛋糕点燃蜡烛
         </div>
       )}
+
+      {/* ── 聚光灯层（叠在蛋糕上方） ── */}
+      {spotPhase <= 2 && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none' }}>
+          {/* 左侧光束：从左上角斜射入，扫向中心 */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(255,220,160,0.0) 0%, rgba(255,220,160,0.0) 38%, rgba(255,210,140,0.22) 48%, rgba(255,220,160,0.0) 52%, rgba(255,220,160,0.0) 100%)',
+            transformOrigin: '50% 50%',
+            transform: spotPhase >= 1 ? 'translateX(0)' : 'translateX(-120%)',
+            transition: 'transform 1.8s cubic-bezier(0.22, 1, 0.36, 1)',
+          }} />
+
+          {/* 右侧光束：从右上角斜射入，扫向中心 */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(225deg, rgba(255,220,160,0.0) 0%, rgba(255,220,160,0.0) 38%, rgba(255,210,140,0.22) 48%, rgba(255,220,160,0.0) 52%, rgba(255,220,160,0.0) 100%)',
+            transformOrigin: '50% 50%',
+            transform: spotPhase >= 1 ? 'translateX(0)' : 'translateX(120%)',
+            transition: 'transform 1.8s cubic-bezier(0.22, 1, 0.36, 1)',
+          }} />
+
+          {/* 汇聚点亮斑 — 光束到达后出现一闪 */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: spotPhase >= 1 ? '220px' : '0px',
+            height: spotPhase >= 1 ? '220px' : '0px',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(255,230,180,0.28) 0%, transparent 70%)',
+            filter: 'blur(30px)',
+            transition: 'width 1.8s cubic-bezier(0.22, 1, 0.36, 1), height 1.8s cubic-bezier(0.22, 1, 0.36, 1)',
+          }} />
+        </div>
+      )}
+
+      {/* ── 黑幕遮层：聚光灯结束后褪去 ── */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 40,
+        background: '#000',
+        opacity: spotPhase >= 2 ? 0 : 1,
+        transition: 'opacity 0.9s ease',
+        pointerEvents: 'none',
+      }} />
 
       {/* 动画 Keyframes */}
       <style>{`
